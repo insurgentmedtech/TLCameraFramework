@@ -8,12 +8,16 @@
 
 /* Begin PBXBuildFile section */
 		08884F3D230BAFDA00ABA45D /* TLCameraFramework.h in Headers */ = {isa = PBXBuildFile; fileRef = 08884F3B230BAFDA00ABA45D /* TLCameraFramework.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		08D93B47230BB6CE00045C94 /* TLCameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08D93B46230BB6CE00045C94 /* TLCameraViewController.swift */; };
+		08D93B49230CCD5100045C94 /* TLCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08D93B48230CCD5100045C94 /* TLCamera.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		08884F38230BAFDA00ABA45D /* TLCameraFramework.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TLCameraFramework.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		08884F3B230BAFDA00ABA45D /* TLCameraFramework.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TLCameraFramework.h; sourceTree = "<group>"; };
 		08884F3C230BAFDA00ABA45D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		08D93B46230BB6CE00045C94 /* TLCameraViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TLCameraViewController.swift; sourceTree = "<group>"; };
+		08D93B48230CCD5100045C94 /* TLCamera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TLCamera.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +51,8 @@
 			isa = PBXGroup;
 			children = (
 				08884F3B230BAFDA00ABA45D /* TLCameraFramework.h */,
+				08D93B46230BB6CE00045C94 /* TLCameraViewController.swift */,
+				08D93B48230CCD5100045C94 /* TLCamera.swift */,
 				08884F3C230BAFDA00ABA45D /* Info.plist */,
 			);
 			path = TLCameraFramework;
@@ -95,6 +101,7 @@
 				TargetAttributes = {
 					08884F37230BAFDA00ABA45D = {
 						CreatedOnToolsVersion = 11.0;
+						LastSwiftMigration = 1030;
 					};
 				};
 			};
@@ -131,6 +138,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				08D93B49230CCD5100045C94 /* TLCamera.swift in Sources */,
+				08D93B47230BB6CE00045C94 /* TLCameraViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -260,6 +269,7 @@
 		08884F41230BAFDA00ABA45D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = 2LGL679YYN;
@@ -277,6 +287,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = net.tengl.TLCameraFramework;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -285,6 +296,7 @@
 		08884F42230BAFDA00ABA45D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = 2LGL679YYN;

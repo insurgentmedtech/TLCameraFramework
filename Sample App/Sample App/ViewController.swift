@@ -10,12 +10,17 @@ import UIKit
 import TLCameraFramework
 
 class ViewController: UIViewController {
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        let camera = TLCameraViewController.init()
+        present(camera, animated: true, completion: nil)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
     }
-
 
 }
 
