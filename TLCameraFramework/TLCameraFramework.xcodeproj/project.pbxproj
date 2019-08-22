@@ -7,12 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0864AE1D230E5E500029D47C /* TLCameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0864AE1C230E5E500029D47C /* TLCameraView.swift */; };
 		08884F3D230BAFDA00ABA45D /* TLCameraFramework.h in Headers */ = {isa = PBXBuildFile; fileRef = 08884F3B230BAFDA00ABA45D /* TLCameraFramework.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		08D93B47230BB6CE00045C94 /* TLCameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08D93B46230BB6CE00045C94 /* TLCameraViewController.swift */; };
 		08D93B49230CCD5100045C94 /* TLCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08D93B48230CCD5100045C94 /* TLCamera.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0864AE1C230E5E500029D47C /* TLCameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TLCameraView.swift; sourceTree = "<group>"; };
 		08884F38230BAFDA00ABA45D /* TLCameraFramework.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TLCameraFramework.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		08884F3B230BAFDA00ABA45D /* TLCameraFramework.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TLCameraFramework.h; sourceTree = "<group>"; };
 		08884F3C230BAFDA00ABA45D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -53,6 +55,7 @@
 				08884F3B230BAFDA00ABA45D /* TLCameraFramework.h */,
 				08D93B46230BB6CE00045C94 /* TLCameraViewController.swift */,
 				08D93B48230CCD5100045C94 /* TLCamera.swift */,
+				0864AE1C230E5E500029D47C /* TLCameraView.swift */,
 				08884F3C230BAFDA00ABA45D /* Info.plist */,
 			);
 			path = TLCameraFramework;
@@ -138,6 +141,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0864AE1D230E5E500029D47C /* TLCameraView.swift in Sources */,
 				08D93B49230CCD5100045C94 /* TLCamera.swift in Sources */,
 				08D93B47230BB6CE00045C94 /* TLCameraViewController.swift in Sources */,
 			);
@@ -278,7 +282,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = TLCameraFramework/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -287,9 +291,10 @@
 				PRODUCT_BUNDLE_IDENTIFIER = net.tengl.TLCameraFramework;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -305,7 +310,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = TLCameraFramework/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -314,8 +319,9 @@
 				PRODUCT_BUNDLE_IDENTIFIER = net.tengl.TLCameraFramework;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

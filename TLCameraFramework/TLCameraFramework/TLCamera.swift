@@ -7,10 +7,12 @@
 //
 
 import UIKit
+import SwiftUI
 import CoreImage
 import AVFoundation
 
-public final class TLCamera: NSObject {
+public final class TLCamera: ObservableObject {
+    @Published private(set) var previewImage: Image
     weak var controller: TLCameraViewController!
     weak var delegate: TLCameraDelegate?
     var session: AVCaptureSession = {
@@ -145,4 +147,9 @@ extension TLCamera: AVCapturePhotoCaptureDelegate {
 @objc public protocol TLCameraDelegate {
     @objc optional func camera(_ camera: TLCamera, didReceiveSampleImage ciImage: CIImage)
     @objc optional func camera(_ camera: TLCamera, didCaptureImage ciImage: CIImage)
+}
+
+extension TLCamera: ObservableObject {
+    
+    
 }
