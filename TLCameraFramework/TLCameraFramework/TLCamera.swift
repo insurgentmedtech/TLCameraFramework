@@ -7,14 +7,15 @@
 //
 
 import UIKit
-import SwiftUI
 import CoreImage
 import AVFoundation
 
-public final class TLCamera: ObservableObject {
-    @Published private(set) var previewImage: Image
-    weak var controller: TLCameraViewController!
-    weak var delegate: TLCameraDelegate?
+public final class TLCamera: NSObject {
+    
+    public weak var delegate: TLCameraDelegate?
+    public var interfaceOrientation: UIInterfaceOrientation = .portrait
+    public var currentDevicePosition: Position = .back
+    
     var session: AVCaptureSession = {
         let session = AVCaptureSession()
         session.sessionPreset = .photo
@@ -26,13 +27,11 @@ public final class TLCamera: ObservableObject {
                                                 position: .unspecified)
     }
     var photoOutput = AVCapturePhotoOutput()
-    var videoOutput = AVCaptureVideoDataOutput()
-    
-    required init(withController controller: TLCameraViewController) {
-        super.init()
-        self.controller = controller
-        self.videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "buffer delegate"))
-    }
+    lazy var videoOutput: AVCaptureVideoDataOutput = {
+        let output = AVCaptureVideoDataOutput()
+        output.setSampleBufferDelegate(self, queue: DispatchQueue(label: "TLCameraBufferDelegate"))
+        return output
+    }()
     
     // MARK: Calculated variables
     var hasFlash: Bool { get {
@@ -40,10 +39,17 @@ public final class TLCamera: ObservableObject {
         return false
     }}
     
-    var currentCamera: AVCaptureDevice? {
+    func device(ofPosition position: Position) -> AVCaptureDevice? {
+        let devicePosition: AVCaptureDevice.Position = {
+            switch position {
+            case .back: return .back
+            case .front: return .front
+            default: return .back
+            }
+        }()
         guard let discoverySession = self.discoverySession else {return nil}
         for device in discoverySession.devices {
-            if device.position == AVCaptureDevice.Position.back {
+            if device.position == devicePosition {
                 return device
             }
         }
@@ -52,9 +58,9 @@ public final class TLCamera: ObservableObject {
     
     // MARK: Camera functions
     
-    func commitConfiguration() {
+    public func commitConfiguration() {
         do {
-            guard let device = self.currentCamera else {return}
+            guard let device = self.device(ofPosition: currentDevicePosition) else {return}
             let input = try AVCaptureDeviceInput(device: device)
             
             if self.session.canAddInput(input) &&
@@ -74,34 +80,62 @@ public final class TLCamera: ObservableObject {
         }
     }
     
+    public func stopCaptureSession() {
+        self.session.stopRunning()
+    }
+    
     /// Captures image with the current set up.
-    func capturePhoto() {
-        guard let device = self.currentCamera else {
-            print("Can't find the current camera.")
-            return
-        }
+    public func capturePhoto() {
+//        guard let device = self.session.inputs. else {
+//            print("Can't find the current camera.")
+//            return
+//        }
         guard self.session.isRunning else {
             print("Capture session is not running.")
             return
         }
         let captureSettings: AVCapturePhotoSettings = {
             let settings = AVCapturePhotoSettings()
-            if device.hasFlash {
-                settings.flashMode = .off
-            }
+//            if device.hasFlash {
+//                settings.flashMode = .off
+//            }
             return settings
         }()
         self.photoOutput.capturePhoto(with: captureSettings, delegate: self)
+    }
+    
+    public func switchToCamera(_ position: Position, completion: @escaping (Bool, Error?) -> Void) {
+        guard session.isRunning else {
+            // Session is not running.
+            completion(false, nil)
+            return
+        }
+        session.stopRunning()
+        session.inputs.forEach { (input) in
+            session.removeInput(input)
+        }
+        if let device = device(ofPosition: position),
+            let input = try? AVCaptureDeviceInput(device: device) {
+            session.addInput(input)
+            session.startRunning()
+            completion(true, nil)
+        } else {
+            completion(false, nil)
+        }
+    }
+    
+    public func setFlash(to flashMode:FlashMode, completion: @escaping (Bool, Error?) -> Void) {
+        completion(true, nil)
     }
 }
 
 // MARK: - Enums
 extension TLCamera {
-    enum Position {
+    public enum Position {
         case front
         case back
     }
-    enum FlashMode {
+    public enum FlashMode {
         case off
         case on
         case auto
@@ -147,9 +181,4 @@ extension TLCamera: AVCapturePhotoCaptureDelegate {
 @objc public protocol TLCameraDelegate {
     @objc optional func camera(_ camera: TLCamera, didReceiveSampleImage ciImage: CIImage)
     @objc optional func camera(_ camera: TLCamera, didCaptureImage ciImage: CIImage)
-}
-
-extension TLCamera: ObservableObject {
-    
-    
 }

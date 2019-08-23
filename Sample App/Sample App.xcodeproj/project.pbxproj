@@ -12,7 +12,6 @@
 		08306A80230BB5640080304E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 08306A7E230BB5640080304E /* Main.storyboard */; };
 		08306A82230BB5660080304E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 08306A81230BB5660080304E /* Assets.xcassets */; };
 		08306A85230BB5660080304E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 08306A83230BB5660080304E /* LaunchScreen.storyboard */; };
-		08D93B42230BB5CE00045C94 /* TLCameraFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08D93B41230BB5CE00045C94 /* TLCameraFramework.framework */; };
 		08D93B43230BB5D700045C94 /* TLCameraFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08D93B41230BB5CE00045C94 /* TLCameraFramework.framework */; };
 		08D93B44230BB5D700045C94 /* TLCameraFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 08D93B41230BB5CE00045C94 /* TLCameraFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -48,7 +47,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				08D93B43230BB5D700045C94 /* TLCameraFramework.framework in Frameworks */,
-				08D93B42230BB5CE00045C94 /* TLCameraFramework.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -121,7 +119,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1030;
-				LastUpgradeCheck = 1030;
+				LastUpgradeCheck = 1100;
 				ORGANIZATIONNAME = "Teng Liu";
 				TargetAttributes = {
 					08306A76230BB5640080304E = {
@@ -315,7 +313,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 2LGL679YYN;
 				INFOPLIST_FILE = "Sample App/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -334,7 +332,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 2LGL679YYN;
 				INFOPLIST_FILE = "Sample App/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
