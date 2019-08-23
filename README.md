@@ -65,7 +65,7 @@
 		//...
 		@IBAction func didClickSwitchCamera(_ sender: UIButton) {
 			sender.isEnabled = false
-			camera.switchCameraTo(.front) { (success, error) in
+			camera?.switchCameraTo(.front) { (success, error) in
 				DispatchQueue.main.async {
 					sender.isEnabled = true
 				}
@@ -78,7 +78,7 @@
 		}
 		
 		@IBAction func didClickShutter(_ sender: UIButton) {
-			
+			camera?.captureImage()
 		}
 		//...
 	}
