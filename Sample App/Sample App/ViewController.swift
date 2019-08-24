@@ -8,6 +8,7 @@
 
 import UIKit
 import TLCameraFramework
+import Photos
 
 class ViewController: UIViewController {
     
@@ -22,13 +23,27 @@ class ViewController: UIViewController {
     }
     
     @IBAction func capturePhoto(_ sender: UIButton) {
+        sender.isEnabled = false
         self.camera?.interfaceOrientation = UIApplication.shared.statusBarOrientation
-        self.camera?.capturePhoto()
+        self.camera?.capturePhoto() { error in
+            if let e = error {
+                print(e.localizedDescription)
+            }
+            DispatchQueue.main.async { sender.isEnabled = true }
+        }
     }
     
     @IBAction func rotateCamera(_ sender: UIButton) {
+        guard let camera = camera else {return}
         sender.isEnabled = false
-        self.camera?.switchToCamera(.front, completion: { (success, error) in
+        let newPosition: TLCamera.Position = {
+            switch camera.currentDevicePosition {
+            case .rearDualLens: return .front
+            case .front: return .rearDualLens
+            default: return .rearDualLens
+            }
+        }()
+        camera.switchToCamera(newPosition, completion: { (success, error) in
             DispatchQueue.main.async {
                 sender.isEnabled = true
             }
@@ -37,9 +52,9 @@ class ViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
-        DispatchQueue.global(qos: .userInteractive).async {
-            self.camera?.commitConfiguration()
+        camera?.configure() { (success, error) in
+            print(error?.localizedDescription ?? "Configured with no error.")
+            return
         }
     }
     
@@ -79,14 +94,26 @@ extension ViewController: TLCameraDelegate {
         
         let imageOrientation: UIImage.Orientation = {
             if let interfaceOrientation = self.camera?.interfaceOrientation {
-                switch interfaceOrientation {
-                case .portrait: return .right
-                case .landscapeLeft: return .down
-                case .landscapeRight: return .up
-                case .portraitUpsideDown: return .left
-                default:
-                    return .right
+                if camera.currentDevicePosition == .rearDualLens {
+                    switch interfaceOrientation {
+                    case .portrait: return .right
+                    case .landscapeLeft: return .down
+                    case .landscapeRight: return .up
+                    case .portraitUpsideDown: return .left
+                    default:
+                        return .right
+                    }
+                } else {
+                    switch interfaceOrientation {
+                    case .portrait: return .leftMirrored
+                    case .landscapeLeft: return .downMirrored
+                    case .landscapeRight: return .upMirrored
+                    case .portraitUpsideDown: return .rightMirrored
+                    default:
+                        return .right
+                    }
                 }
+                
             } else {
                 return .right
             }
@@ -99,6 +126,22 @@ extension ViewController: TLCameraDelegate {
     }
     
     public func camera(_ camera: TLCamera, didCaptureImage ciImage: CIImage) {
-        print(ciImage)
+        var image = ciImage
+        image = image.oriented(.up)
+//        image = image.applyingFilter("CIColorEffectInstant")
+//        print(ciImage.extent)
+        if let data = CIContext().heifRepresentation(of: image, format: .RGBA8, colorSpace: CGColorSpace(name: CGColorSpace.displayP3)!, options: [:]) {
+            PHPhotoLibrary.shared().performChanges({
+                let request = PHAssetCreationRequest.forAsset()
+                request.addResource(with: PHAssetResourceType.photo, data: data, options: nil)
+            }, completionHandler: { (success, error) in
+                guard success else {
+                    print("Error saving to Camera Roll:", error?.localizedDescription ?? "Unknown error.")
+                    return
+                }
+                print("Saved.")
+            })
+        }
+        
     }
 }
