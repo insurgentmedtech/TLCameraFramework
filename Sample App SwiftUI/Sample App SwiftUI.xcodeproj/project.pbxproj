@@ -7,24 +7,25 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		08219DE52311B859005C1EDC /* TLCameraObservable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08219DE42311B859005C1EDC /* TLCameraObservable.swift */; };
+		08219DE72311BC56005C1EDC /* TLCameraFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08219DE62311BC56005C1EDC /* TLCameraFramework.framework */; };
+		08219DE82311BC56005C1EDC /* TLCameraFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 08219DE62311BC56005C1EDC /* TLCameraFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		08ECD1D6230D235C00D1E1F8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08ECD1D5230D235C00D1E1F8 /* AppDelegate.swift */; };
 		08ECD1D8230D235C00D1E1F8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08ECD1D7230D235C00D1E1F8 /* SceneDelegate.swift */; };
 		08ECD1DA230D235C00D1E1F8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08ECD1D9230D235C00D1E1F8 /* ContentView.swift */; };
 		08ECD1DC230D235F00D1E1F8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 08ECD1DB230D235F00D1E1F8 /* Assets.xcassets */; };
 		08ECD1DF230D235F00D1E1F8 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 08ECD1DE230D235F00D1E1F8 /* Preview Assets.xcassets */; };
 		08ECD1E2230D235F00D1E1F8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 08ECD1E0230D235F00D1E1F8 /* LaunchScreen.storyboard */; };
-		08ECD1EC230D23BE00D1E1F8 /* TLCameraFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08ECD1EA230D23B400D1E1F8 /* TLCameraFramework.framework */; };
-		08ECD1ED230D23BE00D1E1F8 /* TLCameraFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 08ECD1EA230D23B400D1E1F8 /* TLCameraFramework.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		08ECD1EE230D23BE00D1E1F8 /* Embed Frameworks */ = {
+		08219DE92311BC56005C1EDC /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				08ECD1ED230D23BE00D1E1F8 /* TLCameraFramework.framework in Embed Frameworks */,
+				08219DE82311BC56005C1EDC /* TLCameraFramework.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -32,6 +33,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		08219DE42311B859005C1EDC /* TLCameraObservable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TLCameraObservable.swift; sourceTree = "<group>"; };
+		08219DE62311BC56005C1EDC /* TLCameraFramework.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TLCameraFramework.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		08ECD1D2230D235C00D1E1F8 /* Sample App SwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sample App SwiftUI.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		08ECD1D5230D235C00D1E1F8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		08ECD1D7230D235C00D1E1F8 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -40,7 +43,6 @@
 		08ECD1DE230D235F00D1E1F8 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		08ECD1E1230D235F00D1E1F8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		08ECD1E3230D235F00D1E1F8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		08ECD1EA230D23B400D1E1F8 /* TLCameraFramework.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TLCameraFramework.framework; path = "../../../../Library/Developer/Xcode/DerivedData/CameraWorkspace-hgzxkpmmzszzzfbycgxhnmnpniiz/Build/Products/Debug-iphonesimulator/TLCameraFramework.framework"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -48,7 +50,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				08ECD1EC230D23BE00D1E1F8 /* TLCameraFramework.framework in Frameworks */,
+				08219DE72311BC56005C1EDC /* TLCameraFramework.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,6 +79,7 @@
 			children = (
 				08ECD1D5230D235C00D1E1F8 /* AppDelegate.swift */,
 				08ECD1D7230D235C00D1E1F8 /* SceneDelegate.swift */,
+				08219DE42311B859005C1EDC /* TLCameraObservable.swift */,
 				08ECD1D9230D235C00D1E1F8 /* ContentView.swift */,
 				08ECD1DB230D235F00D1E1F8 /* Assets.xcassets */,
 				08ECD1E0230D235F00D1E1F8 /* LaunchScreen.storyboard */,
@@ -97,7 +100,7 @@
 		08ECD1E9230D23A100D1E1F8 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				08ECD1EA230D23B400D1E1F8 /* TLCameraFramework.framework */,
+				08219DE62311BC56005C1EDC /* TLCameraFramework.framework */,
 			);
 			path = Frameworks;
 			sourceTree = "<group>";
@@ -112,7 +115,7 @@
 				08ECD1CE230D235C00D1E1F8 /* Sources */,
 				08ECD1CF230D235C00D1E1F8 /* Frameworks */,
 				08ECD1D0230D235C00D1E1F8 /* Resources */,
-				08ECD1EE230D23BE00D1E1F8 /* Embed Frameworks */,
+				08219DE92311BC56005C1EDC /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -175,6 +178,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				08ECD1D6230D235C00D1E1F8 /* AppDelegate.swift in Sources */,
+				08219DE52311B859005C1EDC /* TLCameraObservable.swift in Sources */,
 				08ECD1D8230D235C00D1E1F8 /* SceneDelegate.swift in Sources */,
 				08ECD1DA230D235C00D1E1F8 /* ContentView.swift in Sources */,
 			);

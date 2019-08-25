@@ -106,7 +106,7 @@ public final class TLCamera: NSObject {
     // MARK: Camera functions
     
     /// Configurate the object for camera use. Should only be called once per lifetime, unless camera access wasn't granted in previous calls.
-    public func configure(_ completion: @escaping ((Bool, Error?) -> Void)) {
+    public func configure(_ completion: @escaping ((Bool, Error?) -> Void) = {_, _ in return}) {
         guard TLCamera.authorizationStatus == .authorized else {
             if TLCamera.authorizationStatus == .notDetermined {
                 completion(false, TLCameraError.cameraAccessNotDetermined)
@@ -226,7 +226,7 @@ extension TLCamera: AVCapturePhotoCaptureDelegate {
 }
 
 extension TLCamera {
-    static var authorizationStatus: TLCamera.AuthorizationStatus {
+    public static var authorizationStatus: TLCamera.AuthorizationStatus {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized: return .authorized
         case .denied: return .denied
@@ -236,7 +236,7 @@ extension TLCamera {
         }
     }
     
-    static func requestAccess(_ completion: @escaping (Bool) -> Void) {
+    public static func requestAccess(_ completion: @escaping (Bool) -> Void) {
         switch TLCamera.authorizationStatus {
         case .notDetermined:
             AVCaptureDevice.requestAccess(for: .video) { (granted) in

@@ -8,6 +8,7 @@
 
 import UIKit
 import SwiftUI
+import TLCameraFramework
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -22,7 +23,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Use a UIHostingController as window root view controller
         if let windowScene = scene as? UIWindowScene {
             let window = UIWindow(windowScene: windowScene)
-            window.rootViewController = UIHostingController(rootView: ContentView())
+            coordinator.camera.configure { (success, error) in
+                print(success, error?.localizedDescription ?? "No Error.")
+            }
+            window.rootViewController = UIHostingController(rootView: ContentView().environmentObject(coordinator))
             self.window = window
             window.makeKeyAndVisible()
         }
@@ -56,6 +60,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // to restore the scene back to its current state.
     }
 
+    let coordinator: CameraCoordinator = {
+        let coordinator = CameraCoordinator()
+        TLCamera.requestAccess { (granted) in
+            return
+        }
+        coordinator.camera.delegate = coordinator
+        return coordinator
+    }()
 
 }
 
