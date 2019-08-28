@@ -55,6 +55,7 @@ public final class TLCamera: NSObject {
     private var _availableDevices: [Position: AVCaptureDevice] = [:]
     private var _isSessionCapturing = false
     private var _captureCompletionBlock: ((Error?) -> Void)? = nil
+    
     var session: AVCaptureSession = {
         let session = AVCaptureSession()
         session.sessionPreset = .photo
@@ -188,6 +189,22 @@ public final class TLCamera: NSObject {
     
     public func setFlash(to flashMode:FlashMode, completion: @escaping (Bool, Error?) -> Void) {
         completion(true, nil)
+    }
+    
+    public func setExposure(toDuration duration: CMTime?, iso: Float?) {
+        guard let device = device(of: self._currentDevicePosition) else { return }
+        do {
+            self.session.stopRunning()
+            try device.lockForConfiguration()
+            device.setExposureModeCustom(duration: duration ?? AVCaptureDevice.currentExposureDuration,
+                                         iso: iso ?? AVCaptureDevice.currentISO,
+                                         completionHandler: nil)
+            self.session.startRunning()
+            device.unlockForConfiguration()
+        } catch {
+            print(error.localizedDescription)
+        }
+        
     }
 }
 
