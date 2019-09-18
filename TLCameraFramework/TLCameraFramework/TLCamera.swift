@@ -30,10 +30,16 @@ extension TLCamera {
         case front
         /// The wide angle camera on the back of a device, if available.
         case rearWideAngle
-        /// The telephoto camera on the back of a device, if available.
+        /// The ultra wide camera on the back of a device, if available.
+        case rearUltraWideAngle
+        /// The telephoto camera on the back of a device, if available; otherwise this is the same as `rearWideAngle`
         case rearTelephoto
-        /// The dual lens camera matrix on the back of the device if available; on devices with one camera on the back, this is the same as `rearWideAngle`.
-        case rearDualLens
+        /// The dual lens camera matrix of a wide and a telephoto camera on the back of the device if available; otherwise, this is the same as `rearWideAngle`.
+        case rearUltraWideDualLens
+        /// The dual lens camera matrix of an ultra wide and a wide camera, if available. Otherwise, this is the same as `rearWideAngle`.
+        case rearTelephotoDualLens
+        /// The Triple lens camera matrix on the back of the iPhone 11 Pro; on devices without such camera matrix, this is the same as `rearDualLens`.
+        case rearTripleLens
     }
     public enum FlashMode {
         case off
@@ -51,10 +57,11 @@ extension TLCamera {
 
 public final class TLCamera: NSObject {
     
-    private var _currentDevicePosition: Position = .rearDualLens
+    private var _currentDevicePosition: Position = .rearWideAngle
     private var _availableDevices: [Position: AVCaptureDevice] = [:]
     private var _isSessionCapturing = false
     private var _captureCompletionBlock: ((Error?) -> Void)? = nil
+    private var _flashMode = FlashMode.off
     
     var session: AVCaptureSession = {
         let session = AVCaptureSession()
@@ -77,6 +84,9 @@ public final class TLCamera: NSObject {
     public var currentDevicePosition: Position {
         return _currentDevicePosition
     }
+    public var currentFlashMode: FlashMode {
+        return _flashMode
+    }
     
     /// Returns a `Bool` indecating whether there is flash enabled for the current device. This may include normal camera flashes, and
     /// screen-enabled flashes seen on iPhone 6s and later. If a current device is not found, this will also return `false`.
@@ -87,15 +97,34 @@ public final class TLCamera: NSObject {
     func device(of position: Position) -> AVCaptureDevice? {
         let devicePosition: AVCaptureDevice.Position = {
             switch position {
-            case .rearTelephoto, .rearWideAngle, .rearDualLens: return .back
+            case .rearTelephoto, .rearWideAngle, .rearUltraWideAngle,
+                 .rearTelephotoDualLens, .rearUltraWideDualLens, .rearTripleLens: return .back
             case .front: return .front
             }
         }()
         let deviceType: AVCaptureDevice.DeviceType = {
             switch position {
-            case .rearDualLens: return .builtInDualCamera
+            case .rearTelephotoDualLens: return .builtInDualCamera
+            case .rearUltraWideDualLens:
+                if #available(iOS 13.0, *) {
+                    return .builtInDualWideCamera
+                } else {
+                    return .builtInDualCamera
+                }
             case .front, .rearWideAngle: return .builtInWideAngleCamera
             case .rearTelephoto: return .builtInTelephotoCamera
+            case .rearTripleLens:
+                if #available(iOS 13.0, *) {
+                    return .builtInTripleCamera
+                } else {
+                    return .builtInDualCamera
+                }
+            case .rearUltraWideAngle:
+                if #available(iOS 13.0, *) {
+                    return .builtInUltraWideCamera
+                } else {
+                    return .builtInWideAngleCamera
+                }
             }
         }()
         let discoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [deviceType],
@@ -134,7 +163,7 @@ public final class TLCamera: NSObject {
                 self.session.startRunning()
                 completion(true, nil)
             } else {
-                completion(false, TLCameraError.inputDeviceLinkageError)
+                throw TLCameraError.inputDeviceLinkageError
             }
         } catch {
             completion(false, error)
@@ -153,15 +182,23 @@ public final class TLCamera: NSObject {
     /// Captures image with the current set up.
     public func capturePhoto(_ completion: @escaping ((Error?) -> Void)) {
         guard self.session.isRunning else {
-            print("Capture session is not running.")
+            completion(TLCameraError.sessionIsBusyCapturing)
+            return
+        }
+        guard let device = device(of: _currentDevicePosition) else {
+            completion(TLCameraError.inputDeviceNotFound)
             return
         }
         let captureSettings: AVCapturePhotoSettings = {
             let settings = AVCapturePhotoSettings()
-            //settings.livePhotoMovieFileURL =
-//            if device.hasFlash {
-//                settings.flashMode = .off
-//            }
+            switch self._flashMode {
+            case .on:
+                if device.hasFlash { settings.flashMode = .on }
+            case .off:
+                settings.flashMode = .off
+            case .auto:
+                if device.hasFlash { settings.flashMode = .auto }
+            }
             return settings
         }()
         self._captureCompletionBlock = completion
@@ -169,7 +206,7 @@ public final class TLCamera: NSObject {
         self.photoOutput.capturePhoto(with: captureSettings, delegate: self)
     }
     
-    public func switchToCamera(_ position: Position, completion: @escaping (Bool, Error?) -> Void) {
+    public func switchToCamera(_ position: Position, duration: CMTime? = nil, iso: Float? = nil, completion: @escaping (Bool, Error?) -> Void = {_, _ in return}) {
         guard session.isRunning else { completion(false, TLCameraError.sessionIsNotRunning); return }
         guard _isSessionCapturing == false else { completion(false, TLCameraError.sessionIsBusyCapturing); return }
         session.stopRunning()
@@ -177,35 +214,42 @@ public final class TLCamera: NSObject {
             session.removeInput(input)
         }
         self._currentDevicePosition = position
-        if let device = device(of: self._currentDevicePosition),
-            let input = try? AVCaptureDeviceInput(device: device) {
-            session.addInput(input)
-            session.startRunning()
-            completion(true, nil)
-        } else {
+        guard let device = device(of: self._currentDevicePosition) else {
             completion(false, TLCameraError.inputDeviceNotFound)
+            return
         }
-    }
-    
-    public func setFlash(to flashMode:FlashMode, completion: @escaping (Bool, Error?) -> Void) {
-        completion(true, nil)
-    }
-    
-    public func setExposure(toDuration duration: CMTime?, iso: Float?) {
-        guard let device = device(of: self._currentDevicePosition) else { return }
         do {
-            self.session.stopRunning()
-            try device.lockForConfiguration()
-            device.setExposureModeCustom(duration: duration ?? AVCaptureDevice.currentExposureDuration,
-                                         iso: iso ?? AVCaptureDevice.currentISO,
-                                         completionHandler: nil)
-            self.session.startRunning()
-            device.unlockForConfiguration()
+            let isConfiguringExposure = (duration != nil || iso != nil ) && device.isExposureModeSupported(.custom)
+            if isConfiguringExposure {
+                try device.lockForConfiguration()
+                device.exposureMode = .custom
+                device.setExposureModeCustom(duration: duration ?? AVCaptureDevice.currentExposureDuration,
+                                             iso: iso ?? AVCaptureDevice.currentISO,
+                                             completionHandler: nil)
+                device.unlockForConfiguration()
+            }
+            if let input = try? AVCaptureDeviceInput(device: device) {
+                session.addInput(input)
+                session.startRunning()
+                completion(true, nil)
+            } else {
+                throw TLCameraError.inputDeviceLinkageError
+            }
         } catch {
-            print(error.localizedDescription)
+            completion(false, error)
         }
         
     }
+    
+    public func setFlash(to flashMode:FlashMode, completion: @escaping (Bool, Error?) -> Void = {_, _ in return}) {
+        self._flashMode = flashMode
+        completion(true, nil)
+    }
+    
+    public func isUltraWideLensAvailable: Bool {
+        return true
+    }
+    
 }
 
 extension TLCamera: AVCaptureVideoDataOutputSampleBufferDelegate {
