@@ -246,9 +246,6 @@ public final class TLCamera: NSObject {
         completion(true, nil)
     }
     
-    public func isUltraWideLensAvailable: Bool {
-        return true
-    }
     
 }
 
