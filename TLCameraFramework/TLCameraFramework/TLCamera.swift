@@ -27,20 +27,28 @@ public enum TLCameraError: Error {
 extension TLCamera {
     /// The describer of a camera for the device.
     public enum Position {
-        /// The camera in the front of the device, usually having the same facing as the screen.
-        case front
-        /// The wide angle camera on the back of a device, if available.
-        case rearWideAngle
-        /// The ultra wide camera on the back of a device, if available.
-        case rearUltraWideAngle
-        /// The telephoto camera on the back of a device, if available; otherwise this is the same as `rearWideAngle`
-        case rearTelephoto
-        /// The dual lens camera matrix of a wide and a telephoto camera on the back of the device if available; otherwise, this is the same as `rearWideAngle`.
-        case rearUltraWideDualLens
-        /// The dual lens camera matrix of an ultra wide and a wide camera, if available. Otherwise, this is the same as `rearWideAngle`.
-        case rearTelephotoDualLens
-        /// The Triple lens camera matrix on the back of the iPhone 11 Pro; on devices without such camera matrix, this is the same as `rearDualLens`.
-        case rearTripleLens
+        /// The default device on the back, the first available in the list:
+        /// - `builtInTripleCamera`
+        /// - `builtInDualWideCamera`
+        /// - `builtInDualCamera`
+        /// - `builtInWideAngleCamera`
+        case rearDefault
+        /// The default device on the front if available
+        case frontDefault
+//        /// The camera in the front of the device, usually having the same facing as the screen.
+//        case front
+//        /// The wide angle camera on the back of a device, if available.
+//        case rearWideAngle
+//        /// The ultra wide camera on the back of a device, if available.
+//        case rearUltraWideAngle
+//        /// The telephoto camera on the back of a device, if available; otherwise this is the same as `rearWideAngle`
+//        case rearTelephoto
+//        /// The dual lens camera matrix of a wide and a telephoto camera on the back of the device if available; otherwise, this is the same as `rearWideAngle`.
+//        case rearUltraWideDualLens
+//        /// The dual lens camera matrix of an ultra wide and a wide camera, if available. Otherwise, this is the same as `rearWideAngle`.
+//        case rearTelephotoDualLens
+//        /// The Triple lens camera matrix on the back of the iPhone 11 Pro; on devices without such camera matrix, this is the same as `rearDualLens`.
+//        case rearTripleLens
     }
     public enum FlashMode {
         case off
@@ -58,7 +66,7 @@ extension TLCamera {
 
 public final class TLCamera: NSObject {
     
-    private var _currentDevicePosition: Position = .rearTripleLens
+    private var _currentDevicePosition: Position = .rearDefault
     private var _availableDevices: [Position: AVCaptureDevice] = [:]
     private var _isSessionCapturing = false
     private var _captureCompletionBlock: ((Error?) -> Void)? = nil
@@ -109,45 +117,29 @@ public final class TLCamera: NSObject {
     }
     
     func device(of position: Position) -> AVCaptureDevice? {
-        let devicePosition: AVCaptureDevice.Position = {
-            switch position {
-            case .rearTelephoto, .rearWideAngle, .rearUltraWideAngle,
-                 .rearTelephotoDualLens, .rearUltraWideDualLens, .rearTripleLens: return .back
-            case .front: return .front
-            }
-        }()
-        let deviceType: [AVCaptureDevice.DeviceType] = {
-            switch position {
-            case .rearTelephotoDualLens:
-                return [.builtInDualCamera]
-            case .rearUltraWideDualLens:
-                if #available(iOS 13.0, *) {
-                    return [.builtInDualWideCamera]
-                } else {
-                    return [.builtInDualCamera]
+        switch position {
+        case .rearDefault:
+            if #available(iOS 13.0, *) {
+                if let device = AVCaptureDevice.default(.builtInTripleCamera, for: .video, position: .back) {
+                    return device
                 }
-            case .front, .rearWideAngle:
-                return [.builtInWideAngleCamera]
-            case .rearTelephoto:
-                return [.builtInTelephotoCamera]
-            case .rearTripleLens:
-                if #available(iOS 13.0, *) {
-                    return [.builtInTripleCamera, .builtInDualWideCamera, .builtInDualCamera, .builtInWideAngleCamera]
-                } else {
-                    return [.builtInDualCamera, .builtInWideAngleCamera]
-                }
-            case .rearUltraWideAngle:
-                if #available(iOS 13.0, *) {
-                    return [.builtInUltraWideCamera, .builtInWideAngleCamera]
-                } else {
-                    return [.builtInWideAngleCamera]
+                if let device = AVCaptureDevice.default(.builtInDualWideCamera, for: .video, position: .back) {
+                    return device
                 }
             }
-        }()
-        let discoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: deviceType,
-                                                                mediaType: AVMediaType.video,
-                                                                position: devicePosition)
-        return discoverySession.devices.first
+            if let device = AVCaptureDevice.default(.builtInDualCamera, for: .video, position: .back) {
+                return device
+            }
+            if let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) {
+                return device
+            }
+            return nil
+        case .frontDefault:
+            if let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front) {
+                return device
+            }
+            return nil
+        }
     }
     
     // MARK: Camera functions
