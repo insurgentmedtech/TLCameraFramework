@@ -19,6 +19,7 @@ public enum TLCameraError: Error {
     case cameraAccessDenied
     case cameraAccessNotDetermined
     case inputDeviceDoesNotHaveFlash
+    case illegalConfiguration
     case unknownError
 }
 
@@ -57,7 +58,7 @@ extension TLCamera {
 
 public final class TLCamera: NSObject {
     
-    private var _currentDevicePosition: Position = .rearWideAngle
+    private var _currentDevicePosition: Position = .rearTripleLens
     private var _availableDevices: [Position: AVCaptureDevice] = [:]
     private var _isSessionCapturing = false
     private var _captureCompletionBlock: ((Error?) -> Void)? = nil
@@ -87,11 +88,24 @@ public final class TLCamera: NSObject {
     public var currentFlashMode: FlashMode {
         return _flashMode
     }
+    public var currentZoomFactor: CGFloat? {
+        return device(of: _currentDevicePosition)?.videoZoomFactor
+    }
     
     /// Returns a `Bool` indecating whether there is flash enabled for the current device. This may include normal camera flashes, and
     /// screen-enabled flashes seen on iPhone 6s and later. If a current device is not found, this will also return `false`.
     public var currentDeviceHasFlash: Bool {
         return device(of: _currentDevicePosition)?.hasFlash ?? false
+    }
+    
+    public func currentDeviceMinZoomFactor() -> CGFloat? {
+        guard let device = device(of: _currentDevicePosition) else {return nil}
+        return device.minAvailableVideoZoomFactor
+    }
+    
+    public func currentDeviceMaxZoomFactor() -> CGFloat? {
+        guard let device = device(of: _currentDevicePosition) else {return nil}
+        return device.maxAvailableVideoZoomFactor
     }
     
     func device(of position: Position) -> AVCaptureDevice? {
@@ -102,32 +116,35 @@ public final class TLCamera: NSObject {
             case .front: return .front
             }
         }()
-        let deviceType: AVCaptureDevice.DeviceType = {
+        let deviceType: [AVCaptureDevice.DeviceType] = {
             switch position {
-            case .rearTelephotoDualLens: return .builtInDualCamera
+            case .rearTelephotoDualLens:
+                return [.builtInDualCamera]
             case .rearUltraWideDualLens:
                 if #available(iOS 13.0, *) {
-                    return .builtInDualWideCamera
+                    return [.builtInDualWideCamera]
                 } else {
-                    return .builtInDualCamera
+                    return [.builtInDualCamera]
                 }
-            case .front, .rearWideAngle: return .builtInWideAngleCamera
-            case .rearTelephoto: return .builtInTelephotoCamera
+            case .front, .rearWideAngle:
+                return [.builtInWideAngleCamera]
+            case .rearTelephoto:
+                return [.builtInTelephotoCamera]
             case .rearTripleLens:
                 if #available(iOS 13.0, *) {
-                    return .builtInTripleCamera
+                    return [.builtInTripleCamera, .builtInDualWideCamera, .builtInDualCamera, .builtInWideAngleCamera]
                 } else {
-                    return .builtInDualCamera
+                    return [.builtInDualCamera, .builtInWideAngleCamera]
                 }
             case .rearUltraWideAngle:
                 if #available(iOS 13.0, *) {
-                    return .builtInUltraWideCamera
+                    return [.builtInUltraWideCamera, .builtInWideAngleCamera]
                 } else {
-                    return .builtInWideAngleCamera
+                    return [.builtInWideAngleCamera]
                 }
             }
         }()
-        let discoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [deviceType],
+        let discoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: deviceType,
                                                                 mediaType: AVMediaType.video,
                                                                 position: devicePosition)
         return discoverySession.devices.first
@@ -179,7 +196,8 @@ public final class TLCamera: NSObject {
         self.session.startRunning()
     }
     
-    /// Captures image with the current set up.
+    /// Captures image with the current set up. The completion handler is called when capture ends with success or with an error.
+    /// To work with the image being captured, refer to the delegate methods of `TLCameraDelegate`.
     public func capturePhoto(_ completion: @escaping ((Error?) -> Void)) {
         guard self.session.isRunning else {
             completion(TLCameraError.sessionIsBusyCapturing)
@@ -238,7 +256,29 @@ public final class TLCamera: NSObject {
         } catch {
             completion(false, error)
         }
-        
+    }
+    
+    public func setCaptureParameters(focusPointOfInterest: CGPoint? = nil, exposurePointOfInterest: CGPoint? = nil, exposureBias: Float? = nil) {
+        guard let device = device(of: _currentDevicePosition) else {return}
+        do {
+            try device.lockForConfiguration()
+            if let point = focusPointOfInterest,
+                CGRect(origin: .zero, size: CGSize(width: 1, height: 1)).contains(point) {
+                device.focusPointOfInterest = point
+            }
+            if let point = exposurePointOfInterest,
+                CGRect(origin: .zero, size: CGSize(width: 1, height: 1)).contains(point) {
+                device.exposurePointOfInterest = point
+            }
+            if let ev = exposureBias,
+                ev <= device.maxExposureTargetBias,
+                ev >= device.minExposureTargetBias {
+                device.setExposureTargetBias(ev, completionHandler: nil)
+            }
+            device.unlockForConfiguration()
+        } catch {
+            return
+        }
     }
     
     public func setFlash(to flashMode:FlashMode, completion: @escaping (Bool, Error?) -> Void = {_, _ in return}) {
@@ -246,6 +286,23 @@ public final class TLCamera: NSObject {
         completion(true, nil)
     }
     
+    public func setZoomFactor(to factor: CGFloat, completion: @escaping (Bool, Error?) -> Void = {_, _ in return}) {
+        guard let device = device(of: _currentDevicePosition) else {
+            completion(false, TLCameraError.inputDeviceNotFound)
+            return
+        }
+        guard factor >= device.minAvailableVideoZoomFactor, factor <= device.maxAvailableVideoZoomFactor else {
+            completion(false, TLCameraError.illegalConfiguration)
+            return
+        }
+        do {
+            try device.lockForConfiguration()
+            device.videoZoomFactor = factor
+            device.unlockForConfiguration()
+        } catch {
+            completion(false, error)
+        }
+    }
     
 }
 
