@@ -35,20 +35,6 @@ extension TLCamera {
         case rearDefault
         /// The default device on the front if available
         case frontDefault
-//        /// The camera in the front of the device, usually having the same facing as the screen.
-//        case front
-//        /// The wide angle camera on the back of a device, if available.
-//        case rearWideAngle
-//        /// The ultra wide camera on the back of a device, if available.
-//        case rearUltraWideAngle
-//        /// The telephoto camera on the back of a device, if available; otherwise this is the same as `rearWideAngle`
-//        case rearTelephoto
-//        /// The dual lens camera matrix of a wide and a telephoto camera on the back of the device if available; otherwise, this is the same as `rearWideAngle`.
-//        case rearUltraWideDualLens
-//        /// The dual lens camera matrix of an ultra wide and a wide camera, if available. Otherwise, this is the same as `rearWideAngle`.
-//        case rearTelephotoDualLens
-//        /// The Triple lens camera matrix on the back of the iPhone 11 Pro; on devices without such camera matrix, this is the same as `rearDualLens`.
-//        case rearTripleLens
     }
     public enum FlashMode {
         case off
@@ -71,6 +57,8 @@ public final class TLCamera: NSObject {
     private var _isSessionCapturing = false
     private var _captureCompletionBlock: ((Error?) -> Void)? = nil
     private var _flashMode = FlashMode.off
+    
+    private var _configuringDevice: AVCaptureDevice!
     
     var session: AVCaptureSession = {
         let session = AVCaptureSession()
@@ -278,7 +266,11 @@ public final class TLCamera: NSObject {
         completion(true, nil)
     }
     
-    public func setZoomFactor(to factor: CGFloat, completion: @escaping (Bool, Error?) -> Void = {_, _ in return}) {
+    /// Set the zoom factor for the current device. Report on the success and error
+    /// - Parameter factor: The zoom factor to set to
+    /// - Parameter rate: The rate of zooming speed
+    /// - Parameter completion: The handler
+    public func setZoomFactor(to factor: CGFloat, rate: Float = 0, completion: @escaping (Bool, Error?) -> Void = {_, _ in return}) {
         guard let device = device(of: _currentDevicePosition) else {
             completion(false, TLCameraError.inputDeviceNotFound)
             return
@@ -289,12 +281,76 @@ public final class TLCamera: NSObject {
         }
         do {
             try device.lockForConfiguration()
-            device.videoZoomFactor = factor
+            if rate > 0 {
+                device.ramp(toVideoZoomFactor: factor, withRate: rate)
+            } else {
+                device.videoZoomFactor = factor
+            }
             device.unlockForConfiguration()
         } catch {
             completion(false, error)
         }
     }
+    
+    /// Set focus mode to the given one for the current capture device, and reports on the success and error if any.
+    /// - Parameter focusMode: The desired exposure mode.
+    /// - Parameter completion: The handler takes in `success` and `error` as input.
+    public func setFocusMode(to focusMode: AVCaptureDevice.FocusMode, completion: @escaping (Bool, Error?) -> Void = {_, _ in return}) {
+        guard let device = device(of: _currentDevicePosition) else {
+            completion(false, TLCameraError.inputDeviceNotFound)
+            return
+        }
+        guard device.isFocusModeSupported(focusMode) else {
+            completion(false, TLCameraError.illegalConfiguration)
+            return
+        }
+        do {
+            try device.lockForConfiguration()
+            device.focusMode = focusMode
+            device.unlockForConfiguration()
+        } catch {
+            completion(false, error)
+        }
+    }
+    
+    /// Set exposure mode to the given one for the current capture device, and reports on the success and error if any.
+    /// - Parameter exposureMode: The desired exposure mode.
+    /// - Parameter completion: The handler takes in `success` and `error` as input.
+    public func setExposureMode(to exposureMode: AVCaptureDevice.ExposureMode, completion: @escaping (Bool, Error?) -> Void = {_, _ in return}) {
+        guard let device = device(of: _currentDevicePosition) else {
+            completion(false, TLCameraError.inputDeviceNotFound)
+            return
+        }
+        guard device.isExposureModeSupported(exposureMode) else {
+            completion(false, TLCameraError.illegalConfiguration)
+            return
+        }
+        do {
+            try device.lockForConfiguration()
+            device.exposureMode = exposureMode
+            device.unlockForConfiguration()
+        } catch {
+            completion(false, error)
+        }
+    }
+    
+//    public func performDeviceConfigurations(_ actions: @escaping (() -> Void), completion: @escaping ((Bool, Error?) -> Void)) {
+//        guard let device = device(of: _currentDevicePosition) else {
+//            completion(false, TLCameraError.inputDeviceNotFound)
+//            return
+//        }
+//        do {
+//            try device.lockForConfiguration()
+//            actions()
+//            device.unlockForConfiguration()
+//        } catch {
+//            completion(false, error)
+//            return
+//        }
+//        completion(true, nil)
+//    }
+    
+    
     
 }
 
