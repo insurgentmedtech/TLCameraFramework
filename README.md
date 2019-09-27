@@ -1,6 +1,14 @@
 # Overview
 `TLCameraFramework` is a handy iOS library that provides easy access and customization to the camera.
 
+Advantages:
+
+- It uses capture device with `TLCamera`.`Position` to be either `rearDefault` or `frontDefault`. The framework is designed to offer convenience when you just need to take a photo, not for when you want granular controls with multiple input sources.
+- Abstract `currentEffectiveZoomFactor` conveys the video zoom factor that matters to a user. With any camera, 0.5x is 13mm equivalent; 1x is 26-28mm equivalend, and 2x is 52mm equivalent.
+- Do-Catch for common errors such as locking cameras for configuration, and confiuring them with unreasonable settings.
+- Completion handlers abound, so that you can finish UI flow control within the enclosure.
+
+
 ## Quick Start
 
 ```swift
