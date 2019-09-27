@@ -8,6 +8,9 @@ Advantages:
 - Do-Catch for common errors such as locking cameras for configuration, and confiuring them with unreasonable settings.
 - Completion handlers abound, so that you can finish UI flow control within the enclosure.
 
+Drawbacks:
+
+- It doesn't allow granular input control. For example, you will be forced to use the triple lens camera on an iPhone 11 Pro (and 99% of the time you should be using it anyway).
 
 ## Quick Start
 
