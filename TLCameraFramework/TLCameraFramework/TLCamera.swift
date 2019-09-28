@@ -60,6 +60,19 @@ public final class TLCamera: NSObject {
     
     private var _configuringDevice: AVCaptureDevice!
     
+    var _currentBaseZoomFactor: CGFloat {
+        guard let device = device(of: _currentDevicePosition) else {return 1}
+        if device.deviceType == .builtInTelephotoCamera {
+            return 2
+        }
+        if #available(iOS 13.0, *) {
+            if device.deviceType == .builtInDualWideCamera || device.deviceType == .builtInTripleCamera || device.deviceType == .builtInUltraWideCamera {
+                return 0.5
+            }
+        }
+        return 1
+    }
+    
     var session: AVCaptureSession = {
         let session = AVCaptureSession()
         session.sessionPreset = .photo
@@ -84,8 +97,16 @@ public final class TLCamera: NSObject {
     public var currentFlashMode: FlashMode {
         return _flashMode
     }
-    public var currentZoomFactor: CGFloat? {
-        return device(of: _currentDevicePosition)?.videoZoomFactor
+//    public var currentZoomFactor: CGFloat? {
+//        return device(of: _currentDevicePosition)?.videoZoomFactor
+//    }
+    /// Returns the zoom factor that matters to the user, not relative to the device.
+    ///
+    /// For none-
+    
+    public var currentEffectiveZoomFactor: CGFloat? {
+        guard let device = device(of: _currentDevicePosition) else {return nil}
+        return device.videoZoomFactor * _currentBaseZoomFactor
     }
     
     /// Returns a `Bool` indecating whether there is flash enabled for the current device. This may include normal camera flashes, and
@@ -94,14 +115,14 @@ public final class TLCamera: NSObject {
         return device(of: _currentDevicePosition)?.hasFlash ?? false
     }
     
-    public func currentDeviceMinZoomFactor() -> CGFloat? {
+    public func currentDeviceMinEffectiveZoomFactor() -> CGFloat? {
         guard let device = device(of: _currentDevicePosition) else {return nil}
-        return device.minAvailableVideoZoomFactor
+        return device.minAvailableVideoZoomFactor * _currentBaseZoomFactor
     }
     
-    public func currentDeviceMaxZoomFactor() -> CGFloat? {
+    public func currentDeviceMaxEffectiveZoomFactor() -> CGFloat? {
         guard let device = device(of: _currentDevicePosition) else {return nil}
-        return device.maxAvailableVideoZoomFactor
+        return device.maxAvailableVideoZoomFactor * _currentBaseZoomFactor
     }
     
     func device(of position: Position) -> AVCaptureDevice? {
@@ -266,15 +287,16 @@ public final class TLCamera: NSObject {
         completion(true, nil)
     }
     
-    /// Set the zoom factor for the current device. Report on the success and error
+    /// Set the zoom factor for the current device. Report on the success and error.
     /// - Parameter factor: The zoom factor to set to
     /// - Parameter rate: The rate of zooming speed
     /// - Parameter completion: The handler
-    public func setZoomFactor(to factor: CGFloat, rate: Float = 0, completion: @escaping (Bool, Error?) -> Void = {_, _ in return}) {
+    public func setEffectiveZoomFactor(to factor: CGFloat, rate: Float = 0, completion: @escaping (Bool, Error?) -> Void = {_, _ in return}) {
         guard let device = device(of: _currentDevicePosition) else {
             completion(false, TLCameraError.inputDeviceNotFound)
             return
         }
+        let factor = factor / self._currentBaseZoomFactor
         guard factor >= device.minAvailableVideoZoomFactor, factor <= device.maxAvailableVideoZoomFactor else {
             completion(false, TLCameraError.illegalConfiguration)
             return
