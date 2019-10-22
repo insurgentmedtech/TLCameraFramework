@@ -263,11 +263,13 @@ public final class TLCamera: NSObject {
         guard let device = device(of: _currentDevicePosition) else {return}
         do {
             try device.lockForConfiguration()
-            if let point = focusPointOfInterest,
+            if device.isFocusPointOfInterestSupported,
+                let point = focusPointOfInterest,
                 CGRect(origin: .zero, size: CGSize(width: 1, height: 1)).contains(point) {
                 device.focusPointOfInterest = point
             }
-            if let point = exposurePointOfInterest,
+            if device.isExposurePointOfInterestSupported,
+                let point = exposurePointOfInterest,
                 CGRect(origin: .zero, size: CGSize(width: 1, height: 1)).contains(point) {
                 device.exposurePointOfInterest = point
             }
