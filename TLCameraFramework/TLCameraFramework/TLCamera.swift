@@ -9,6 +9,7 @@
 import UIKit
 import CoreImage
 import AVFoundation
+import CoreLocation
 
 public enum TLCameraError: Error {
     case sessionIsMissing
@@ -374,8 +375,57 @@ public final class TLCamera: NSObject {
 //        completion(true, nil)
 //    }
     
+    // MARK: - Loaction manager
+    public var allowsLocationTracking = false
+    lazy var locationManager: CLLocationManager = {
+        let manager = CLLocationManager()
+        manager.delegate = self
+        manager.distanceFilter = 10
+        return manager
+    }()
+    private var _location: CLLocation? = nil
+    private var locationUpdatedAt = Date()
+    public var location: CLLocation? {
+        return _location
+    }
     
+    public func updateLocation() {
+        guard allowsLocationTracking else {return}
+        let authorizationStatus = CLLocationManager.authorizationStatus()
+        guard authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways else {
+            if authorizationStatus == .notDetermined {
+                self.locationManager.requestWhenInUseAuthorization()
+            } else {
+                self.allowsLocationTracking = false
+            }
+            return
+        }
+        self.locationManager.startUpdatingLocation()
+    }
+}
+
+extension TLCamera: CLLocationManagerDelegate {
+    public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.first else {return}
+        self._location = location
+    }
     
+    public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print(error)
+        return
+    }
+    
+    public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        switch status {
+        case .authorizedAlways, .authorizedWhenInUse:
+            self.updateLocation()
+        case .denied, .restricted:
+            self.allowsLocationTracking = false
+        default:
+            return
+        }
+        
+    }
 }
 
 extension TLCamera: AVCaptureVideoDataOutputSampleBufferDelegate {
@@ -399,6 +449,10 @@ extension TLCamera: AVCapturePhotoCaptureDelegate {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
         delegate?.camera?(self, didReceiveSampleImage: ciImage)
+        if allowsLocationTracking && Date().timeIntervalSince(self.locationUpdatedAt) > 180 {
+            self.locationUpdatedAt = Date()
+            self.locationManager.requestLocation()
+        }
     }
     
     public func photoOutput(_ output: AVCapturePhotoOutput, didFinishCaptureFor resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
